@@ -7,6 +7,7 @@ import requests
 import uvicorn
 from fastapi import FastAPI
 import asyncio
+import wget
 
 app = FastAPI()
 
@@ -14,17 +15,17 @@ app = FastAPI()
 class manager_status(BaseModel):
     INFER_SE: str = 'localhost:8001'
     FL_client: str = 'localhost:8002'
-    FL_server_ST: str = 'localhost:8000'  # '10.152.183.186:8000'
+    FL_server_ST: str = '10.152.183.186:8000'
     FL_server: str = '10.152.183.181:8080'  # '0.0.0.1:8080'
-    S3_filename: str = '/model/model.h5'  # 다운로드된 모델이 저장될 위치
+    S3_filename: str = '/model/model.h5'  # 다운로드된 모델이 저장될 위치#######################
     S3_bucket: str = 'ccl-fl-demo-model'
     S3_key: str = ''  # 모델 가중치 파일 이름
     infer_ready: bool = False  # 모델이 준비되어있음 infer update 필요
     s3_ready: bool = False  # s3주소를 확보함
     have_server_ip: bool = True  # server 주소가 확보되어있음
     FL_ready: bool = False  # FL준비됨
-    infer_running: bool = False # inference server 작동중
-    FL_learning: bool = False # flower client 학습중
+    infer_running: bool = False  # inference server 작동중
+    FL_learning: bool = False  # flower client 학습중
 
 
 manager = manager_status()
@@ -33,8 +34,11 @@ manager = manager_status()
 # 모델 pull(requests를 이용하여 s3에 접근해 모델을 받아온다. 모델은 공유 폴더에 저장한다.)
 def pull_model():
     global manager
-    boto3.client('s3').download_file(manager.S3_bucket, manager.S3_key, manager.S3_filename)
+    # s3=boto3.client('s3')
+    # s3.download_file(manager.S3_bucket, manager.S3_key, manager.S3_filename)
     # 예외 처리 추가 필요
+    url = "https://"+manager.S3_bucket+".s3.ap-northeast-2.amazonaws.com/"+manager.S3_key
+    wget.download(url, out=manager.S3_filename)
     return
 
 
@@ -44,7 +48,7 @@ async def health_check():
     while True:
         print(manager.FL_learning)
 
-        if manager.FL_learning==False:
+        if manager.FL_learning == False:
             res = requests.get('http://' + manager.FL_server_ST + '/FLSe/info')
             print('health_check')
             if (res.status_code == 200) and (res.json()['Server_Status']['FLSeReady']):
@@ -83,7 +87,7 @@ async def infer_start():
     global manager
     while True:
         try:
-            if manager.infer_running==False: #항상 inferserver가 켜져있도록 한다.
+            if manager.infer_running == False:  # 항상 inferserver가 켜져있도록 한다.
                 print('infer_start')
                 res = requests.get('http://' + manager.INFER_SE + '/start')
                 print('infer_start')
@@ -106,7 +110,7 @@ async def infer_start():
 async def infer_update():
     global manager
     while True:
-        if manager.infer_ready==True:
+        if manager.infer_ready == True:
             print('infer_update')
             while True:
                 res = requests.get('http://' + manager.INFER_SE + '/update')
@@ -129,9 +133,11 @@ async def infer_update():
 def get_server_info():
     global manager
     res = requests.get('http://' + manager.FL_server_ST + '/FLSe/info')
+    # print(res.json())
     manager.S3_key = res.json()['Server_Status']['S3_key']
     manager.S3_bucket = res.json()['Server_Status']['S3_bucket']
     manager.s3_ready = True
+    return manager
 
 
 # post 학습 완료 정보 수신
@@ -144,6 +150,10 @@ async def training():
 
 @app.on_event("startup")
 def startup():
+    ##### S0 #####
+    get_server_info()
+    pull_model()
+    ##### S1 #####
     loop = asyncio.get_event_loop()
     loop.set_debug(True)
     loop.create_task(training())
@@ -173,9 +183,4 @@ def get_manager_info():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # asyncio.run(training())
-    ##### S0 #####
-    get_server_info()
-    # pull_model()
-    ##### S1 #####
-
     uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True, workers=1)
