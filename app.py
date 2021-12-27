@@ -180,19 +180,19 @@ def read_root():
 
 @app.get("/trainFin")
 def fin_train():
-    print('fin')
     global manager
+    print('fin')
     manager.infer_ready = True
     manager.FL_learning = False
-    return {'response': 'OK'}
+
 
 @app.get("/trainFail")
 def fin_train():
-    print('Fail')
     global manager
+    print('Fail')
     manager.infer_ready = False
     manager.FL_learning = False
-    return {'response': 'OK'}
+
 
 @app.get('/info')
 def get_manager_info():
