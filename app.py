@@ -187,7 +187,7 @@ def fin_train():
     return manager
 
 @app.get("/trainFail")
-def fin_train():
+def fail_train():
     global manager
     print('Fail')
     manager.infer_ready = False
