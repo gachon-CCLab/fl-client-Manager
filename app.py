@@ -183,6 +183,13 @@ def fin_train():
     manager.FL_learning = False
     return {'response': 'OK'}
 
+@app.get("/trainFail")
+def fin_train():
+    print('Fail')
+    global manager
+    manager.infer_ready = False
+    manager.FL_learning = False
+    return {'response': 'OK'}
 
 @app.get('/info')
 def get_manager_info():
