@@ -106,8 +106,8 @@ async def infer_start():
                     print('infer_start_NO')
                     # pass
                     await asyncio.sleep(12)
-        except requests.exceptions.RequestException as erra:
-            print("AnyException : ", erra)
+        except Exception as erra:
+            print("infer_start : ", erra)
 
     # 예외 처리 추가 필요
     return
