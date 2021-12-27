@@ -39,6 +39,7 @@ def pull_model():
     # 예외 처리 추가 필요
     url = "https://"+manager.S3_bucket+".s3.ap-northeast-2.amazonaws.com/"+manager.S3_key
     wget.download(url, out=manager.S3_filename)
+    manager.infer_ready= True
     return
 
 
@@ -94,12 +95,13 @@ async def infer_start():
     global manager
     while True:
         try:
-            if manager.infer_running == False:  # 항상 inferserver가 켜져있도록 한다.
+            if (manager.infer_running == False) and (manager.infer_ready == True):  # 항상 inferserver가 켜져있도록 한다.
                 print('infer_start')
                 res = requests.get('http://' + manager.INFER_SE + '/start')
                 print('infer_start')
                 if (res.status_code == 200) and (res.json()['running']):
                     manager.infer_running = res.json()['running']
+                    manager.infer_ready = False
                     print('infer_start')
                     break
                 else:
