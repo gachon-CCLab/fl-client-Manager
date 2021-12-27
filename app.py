@@ -184,7 +184,7 @@ def fin_train():
     print('fin')
     manager.infer_ready = True
     manager.FL_learning = False
-
+    return manager
 
 @app.get("/trainFail")
 def fin_train():
@@ -192,7 +192,7 @@ def fin_train():
     print('Fail')
     manager.infer_ready = False
     manager.FL_learning = False
-
+    return manager
 
 @app.get('/info')
 def get_manager_info():
@@ -202,4 +202,4 @@ def get_manager_info():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     # asyncio.run(training())
-    uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True, workers=1)
+    uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True)
