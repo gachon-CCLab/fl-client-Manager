@@ -108,6 +108,7 @@ async def infer_start():
                     await asyncio.sleep(12)
         except Exception as erra:
             print("infer_start : ", erra)
+            await asyncio.sleep(12)
 
     # 예외 처리 추가 필요
     return
