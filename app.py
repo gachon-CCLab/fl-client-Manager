@@ -200,6 +200,6 @@ def get_manager_info():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     # asyncio.run(training())
     uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True, workers=1)
