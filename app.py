@@ -49,14 +49,18 @@ async def health_check():
         print(manager.FL_learning)
 
         if manager.FL_learning == False:
-            res = requests.get('http://' + manager.FL_server_ST + '/FLSe/info')
-            print('health_check')
-            if (res.status_code == 200) and (res.json()['Server_Status']['FLSeReady']):
-                manager.FL_ready = res.json()['Server_Status']['FLSeReady']
-                print(manager.FL_learning)
-                manager.FL_learning = True
-                break
-            else:
+            try:
+                res = requests.get('http://' + manager.FL_server_ST + '/FLSe/info')
+                print('health_check')
+                if (res.status_code == 200) and (res.json()['Server_Status']['FLSeReady']):
+                    manager.FL_ready = res.json()['Server_Status']['FLSeReady']
+                    print(manager.FL_learning)
+                    manager.FL_learning = True
+                    break
+                else:
+                    await asyncio.sleep(5)
+            except Exception as e:
+                print('[E] health_check',e)
                 await asyncio.sleep(5)
         else:
             await asyncio.sleep(5)
@@ -68,16 +72,19 @@ async def client_start():
     print('client_start')
 
     while True:
-        print('client_start')
-        res = requests.get('http://' + manager.FL_client + '/start')
-        print('client_start')
-        if (res.status_code == 200) and (res.json()['FLCLstart']):
+        try:
             print('client_start')
-            break
-        else:
-            print(res)
-            await asyncio.sleep(1)
-
+            res = requests.get('http://' + manager.FL_client + '/start')
+            print('client_start')
+            if (res.status_code == 200) and (res.json()['FLCLstart']):
+                print('client_start')
+                break
+            else:
+                print(res)
+                await asyncio.sleep(2)
+        except Exception as e:
+            print('[E] client_start',e)
+            await asyncio.sleep(5)
     # 예외 처리 추가 필요
     return
 
@@ -113,19 +120,21 @@ async def infer_update():
         if manager.infer_ready == True:
             print('infer_update')
             while True:
-                res = requests.get('http://' + manager.INFER_SE + '/update')
-                print('infer_update')
-                if (res.status_code == 200) and (res.json()['updating']):
+                try:
+                    res = requests.get('http://' + manager.INFER_SE + '/update')
                     print('infer_update')
-                    break
-                else:
-                    print('infer_update_NO')
+                    if (res.status_code == 200) and (res.json()['updating']):
+                        print('infer_update')
+                        manager.infer_ready = False
+                        break
+                    else:
+                        print('infer_update_NO')
+                        await asyncio.sleep(13)
+                except Exception as e:
+                    print('[E] infer_update', e)
                     await asyncio.sleep(13)
-            manager.infer_ready = False
-            break
         else:
             await asyncio.sleep(13)
-    return
     # 예외 처리 추가 필요
 
 
