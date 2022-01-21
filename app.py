@@ -26,7 +26,7 @@ class manager_status(BaseModel):
     FL_ready: bool = False  # FL준비됨
     infer_running: bool = False  # inference server 작동중
     FL_learning: bool = False  # flower client 학습중
-
+    Model_V: int = 0 #모델버전 
 
 manager = manager_status()
 
@@ -58,6 +58,8 @@ async def health_check():
                     print(manager.FL_learning)
                     manager.FL_learning = True
                     break
+                elif (res.status_code == 200) and(res.json()['Server_Status']['Model_V']!=manager.Model_V):
+                    pull_model()
                 else:
                     await asyncio.sleep(5)
             except Exception as e:
@@ -149,6 +151,7 @@ def get_server_info():
     manager.S3_key = res.json()['Server_Status']['S3_key']
     manager.S3_bucket = res.json()['Server_Status']['S3_bucket']
     manager.s3_ready = True
+    manager.Model_V =  res.json()['Server_Status']['Model_V']
     return manager
 
 
@@ -184,6 +187,7 @@ def fin_train():
     print('fin')
     manager.infer_ready = True
     manager.FL_learning = False
+    manager.Model_V += 1
     return manager
 
 @app.get("/trainFail")
