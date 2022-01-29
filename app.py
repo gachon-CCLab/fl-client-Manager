@@ -231,4 +231,4 @@ async def pull_model():
 
 if __name__ == "__main__":
     # asyncio.run(training())
-    uvicorn.run("app2:app", host='0.0.0.0', port=8080, reload=True)
+    uvicorn.run("app:app", host='0.0.0.0', port=8080, reload=True)
