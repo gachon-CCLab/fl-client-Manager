@@ -228,7 +228,7 @@ async def pull_model():
     loop = asyncio.get_event_loop()
     url = "https://" + manager.S3_bucket + ".s3.ap-northeast-2.amazonaws.com/" + manager.S3_key
     request = partial(wget.download, url, out=manager.S3_filename)
-    res = loop.run_in_executor(None, request)
+    res = await loop.run_in_executor(None, request)
     manager.infer_ready = True
     logging.debug(res)
     return res
