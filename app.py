@@ -35,6 +35,7 @@ class manager_status(BaseModel):
 
     infer_online: bool = False  # infer online?
     infer_running: bool = False  # inference server 작동중
+    infer_updating:bool = False #i inference server 업데이트중
     infer_ready: bool = False  # 모델이 준비되어있음 infer update 필요
 
 
@@ -71,6 +72,7 @@ def fin_train():
     print('fin')
     manager.infer_ready = True
     manager.FL_learning = False
+    manager.FL_ready = False
     manager.Model_V += 1
     return manager
 
@@ -79,8 +81,9 @@ def fin_train():
 def fail_train():
     global manager
     print('Fail')
-    manager.infer_ready = False
+    #manager.infer_ready = False
     manager.FL_learning = False
+    manager.FL_ready = False
     return manager
 
 
@@ -158,6 +161,7 @@ async def check_flclient_online():
             manager.FL_learning = res.json()['FLCLstart']
             logging.info('FL_client online')
         else:
+            logging.info('FL_client offline')
             pass
     else:
         await asyncio.sleep(12)
@@ -191,6 +195,7 @@ async def start_training():
         loop = asyncio.get_event_loop()
         res = await loop.run_in_executor(None, requests.get, ('http://' + manager.FL_client + '/start'))
         if (res.status_code == 200) and (res.json()['FLCLstart']):
+            manager.FL_learning = True
             logging.info('start_train')
         elif (res.status_code != 200):
             manager.FL_client_online = False
