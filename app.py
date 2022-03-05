@@ -92,6 +92,18 @@ def fail_train():
 def get_manager_info():
     return manager
 
+@app.get('/flclient_out')
+def flclient_out():
+    manager.FL_client_online = False
+    manager.FL_learning = False
+    return manager
+
+@app.get('/infer_out')
+def flclient_out():
+    manager.infer_online = False
+    manager.infer_running = False
+    manager.infer_updating = False
+    return manager
 
 def async_dec(awaitable_func):
     async def keeping_state():
