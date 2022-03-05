@@ -99,7 +99,7 @@ def flclient_out():
     return manager
 
 @app.get('/infer_out')
-def flclient_out():
+def infer_out():
     manager.infer_online = False
     manager.infer_running = False
     manager.infer_updating = False
