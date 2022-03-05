@@ -119,6 +119,7 @@ async def health_check():
         if (res.status_code == 200) and (res.json()['Server_Status']['FLSeReady']):
             if res.json()['Server_Status']['Model_V'] != manager.Model_V:
                 await pull_model()
+                manager.Model_V = res.json()['Server_Status']['Model_V']
             manager.FL_ready = res.json()['Server_Status']['FLSeReady']
             # logging.info('flclient learning')
             # manager.FL_learning = True
@@ -194,7 +195,7 @@ async def start_training():
     if (manager.FL_client_online == True) and (manager.FL_learning == False) and (manager.FL_ready == True):
         logging.info('start training')
         loop = asyncio.get_event_loop()
-        res = await loop.run_in_executor(None, requests.get, ('http://' + manager.FL_client + '/start'))
+        res = await loop.run_in_executor(None, requests.get, ('http://' + manager.FL_client + '/start/'+manager.FL_server))
         if (res.status_code == 200) and (res.json()['FLCLstart']):
             manager.FL_learning = True
             logging.info('start_train')
